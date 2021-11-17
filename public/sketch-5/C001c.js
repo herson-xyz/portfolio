@@ -58,13 +58,13 @@ const sketch = ({ context }) => {
   //   './s001c-assets/amongus.png'
   // );
   const impostorTexture = new THREE.TextureLoader().load(
-    './C001c-assets/gm.png'
+    'gm.png'
   );
   const nopalTexture = new THREE.TextureLoader().load(
-    './C001c-assets/el-nopal.png'
+    'el-nopal.png'
   );
   const maskTexture = new THREE.TextureLoader().load(
-    './C001c-assets/mask.png'
+    'mask.png'
   );
 
   const vertexShader = `

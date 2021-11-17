@@ -1,0 +1,23 @@
+{
+  "name": "sketches",
+  "version": "1.0.0",
+  "description": "[Test](https://github.com/watsrunner/sketches/blob/main/sketch_1.html)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/watsrunner/sketches.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/watsrunner/sketches/issues"
+  },
+  "homepage": "https://github.com/watsrunner/sketches#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}

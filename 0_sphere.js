@@ -24,12 +24,11 @@ const glsl = require("glslify");
 const { BackSide, Vector3 } = require("three");
 
 const settings = {
-  // dimensions: [512, 512],
+  dimensions: [450, 450],
+  canvas: canvas2,
   duration: 4,
   pixelsPerInch: 300,
-  // Make the loop animated
   animate: true,
-  // Get a WebGL canvas rather than 2D
   context: "webgl"
 };
 
@@ -42,7 +41,7 @@ const sketch = ({ context }) => {
     canvas: context.canvas
   });
 
-  renderer.setClearColor("black", 1);
+  renderer.setClearColor("white", 1);
 
   ///////////////////////////////////
   // Setup Camera, Controls, Scene //
@@ -73,11 +72,11 @@ const sketch = ({ context }) => {
   //////////////////////////////
   /////// Setup Material ///////
   //////////////////////////////
-  const sprite = new THREE.TextureLoader().load( 'C001-assets/disc.png' );
+  const sprite = new THREE.TextureLoader().load( 'assets/disc.png' );
 
   const vertexShader = glsl(["#define GLSLIFY 1\n\n    varying vec2 vUv;\n    \n    void main () {\n      vUv = uv;\n\n      vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );\n      gl_PointSize = 10.0 * (1.0 / - mvPosition.z );\n      gl_Position = projectionMatrix * mvPosition;\n    }\n  "]);
 
-  const fragmentShader = glsl(["#define GLSLIFY 1\n\n    void main () {\n      gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);\n    }\n  "]);
+  const fragmentShader = glsl(["#define GLSLIFY 1\n\n    void main () {\n      gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);\n    }\n  "]);
 
   // const pointsMaterial = new THREE.PointsMaterial({
   //   size: 0.075,

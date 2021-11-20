@@ -1,313 +1,85 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 const canvasSketch = require('canvas-sketch');
-const { lerp } = require('canvas-sketch-util/math');
-const random = require('canvas-sketch-util/random');
-const palettes = require('nice-color-palettes');                  
+const random = require('canvas-sketch-util/random'); // bring in this utility for better randomness
 
 const settings = {
-  dimensions: [ 512, 512 ]
+  dimensions: [ 450, 450 ],
+  canvas: canvas1
 };
 
-const sketch = () => {
-  // random.setSeed(7);                                                  
+const sketch = ({ width, height }) => {
 
-  const n = random.rangeFloor(1, 6);
-  const palette = random.shuffle(                                 
-                  random.pick(palettes))
-                  .slice(0, n);                          
-  
-  const createGrid = () => {            
+  function generatePolygon(centerX, centerY, radius, blobDetail){
     const points = [];
-    const count = 25;
+    const circumference = Math.PI * 2;
+    const angleOffset = circumference / blobDetail;
 
-    for (let x = 0; x < count ; x++) {  
-      for (let y = 0; y < count; y++) {
-        const u = count <= 1 ? 0.5 : x / (count - 1);            
-        const v = count <= 1 ? 0.5 : y / (count - 1);
-        const radius = Math.abs(random.noise2D(u, v)) * 0.2;                              
-        points.push({                                             
-          radius,
-          position: [ u, v ],
-          color: random.pick(palette),
-          rotation: random.noise2D(u, v)                          // Add same randomness as radius above
-        });
-      }
+    for (let angle = 0; angle < circumference; angle += angleOffset) {
+      let currentX = centerX + Math.cos(angle) * radius;
+      let currentY = centerY + Math.sin(angle) * radius;
+      // let v1 = p5.createVector(currentX, currentY);
+      let v1 = {x: currentX, y: currentY};
+
+      points.push(v1);
+
     }
-    
+
     return points;
   }
 
-  const points = createGrid().filter(()=> random.value() > 0.5); 
-  const margin = 75;
+  function generateBlob(points, depth, variance, varianceDecrease){
+    let new_points = [];
+
+    for (let i = 0; i < points.length; i++){
+      const from = points[i];
+      const to = (i === points.length - 1) ? points[0] : points[i + 1];
+
+      const midx = (from.x + to.x) / 2;
+      const midy = (from.y + to.y) / 2;
+
+      const nx = midx + random.gaussian() * variance;
+      const ny = midy + random.gaussian() * variance;
+
+      new_points.push(from);
+      new_points.push({
+        x: nx,
+        y: ny
+      })
+
+    }
+
+    if (depth > 0) {
+      depth--;
+
+      return generateBlob(new_points, depth, variance/varianceDecrease, varianceDecrease);
+    }
+
+    return new_points;
+  }
+
+  const polygon = generatePolygon(width/2, height/2, 120, 10);
+  const blob = generateBlob(polygon, 5, 12, 2);
 
   return ({ context, width, height }) => {
-    document.body.style.backgroundColor = "black";
 
-    context.fillStyle = 'white';
-    context.fillRect(0, 0, width, height);
+    // context.fillStyle = 'white';
+    // context.fillRect(0, 0, width, height);
+    // context.strokeStyle = "rgba(1, 1, 1, 0)";
 
-    points.forEach(data => {
-      const {                                                     
-        radius,
-        position,
-        color,
-        rotation                                                  // Destructure
-      } = data;
+    context.fillStyle = 'rgb(55, 55, 55)';
 
-      const [ u, v ] = position;                                  
-
-      const x = lerp(margin, width - margin, u);
-      const y = lerp(margin, height - margin, v);
-
-      /* - Save state
-         - Translate origin to the x,y coordinate on the grid
-         - Rotate
-         - Draw object at origin
-         - Translate origin back to original place
-      */
-      context.save();
-        context.fillStyle = color;
-        context.font = `${radius * width}px "Arial"`;
-        context.translate(x, y);
-        context.rotate(rotation);                                  // Rotate
-        context.fillText('=', 0, 0);
-      context.restore();
-
-
+    context.beginPath();
+    blob.forEach(point =>{
+      context.lineTo(point.x, point.y);
     });
+    context.closePath();
+    context.fill();
   };
 };
 
 canvasSketch(sketch, settings);
 
-},{"canvas-sketch":5,"canvas-sketch-util/math":3,"canvas-sketch-util/random":4,"nice-color-palettes":7}],2:[function(require,module,exports){
-module.exports = wrap;
-function wrap (value, from, to) {
-  if (typeof from !== 'number' || typeof to !== 'number') {
-    throw new TypeError('Must specify "to" and "from" arguments as numbers');
-  }
-  // algorithm from http://stackoverflow.com/a/5852628/599884
-  if (from > to) {
-    var t = from;
-    from = to;
-    to = t;
-  }
-  var cycle = to - from;
-  if (cycle === 0) {
-    return to;
-  }
-  return value - cycle * Math.floor((value - from) / cycle);
-}
-
-},{}],3:[function(require,module,exports){
-var defined = require('defined');
-var wrap = require('./lib/wrap');
-var EPSILON = Number.EPSILON;
-
-function clamp (value, min, max) {
-  return min < max
-    ? (value < min ? min : value > max ? max : value)
-    : (value < max ? max : value > min ? min : value);
-}
-
-function clamp01 (v) {
-  return clamp(v, 0, 1);
-}
-
-function lerp (min, max, t) {
-  return min * (1 - t) + max * t;
-}
-
-function inverseLerp (min, max, t) {
-  if (Math.abs(min - max) < EPSILON) return 0;
-  else return (t - min) / (max - min);
-}
-
-function smoothstep (min, max, t) {
-  var x = clamp(inverseLerp(min, max, t), 0, 1);
-  return x * x * (3 - 2 * x);
-}
-
-function toFinite (n, defaultValue) {
-  defaultValue = defined(defaultValue, 0);
-  return typeof n === 'number' && isFinite(n) ? n : defaultValue;
-}
-
-function expandVector (dims) {
-  if (typeof dims !== 'number') throw new TypeError('Expected dims argument');
-  return function (p, defaultValue) {
-    defaultValue = defined(defaultValue, 0);
-    var scalar;
-    if (p == null) {
-      // No vector, create a default one
-      scalar = defaultValue;
-    } else if (typeof p === 'number' && isFinite(p)) {
-      // Expand single channel to multiple vector
-      scalar = p;
-    }
-
-    var out = [];
-    var i;
-    if (scalar == null) {
-      for (i = 0; i < dims; i++) {
-        out[i] = toFinite(p[i], defaultValue);
-      }
-    } else {
-      for (i = 0; i < dims; i++) {
-        out[i] = scalar;
-      }
-    }
-    return out;
-  };
-}
-
-function lerpArray (min, max, t, out) {
-  out = out || [];
-  if (min.length !== max.length) {
-    throw new TypeError('min and max array are expected to have the same length');
-  }
-  for (var i = 0; i < min.length; i++) {
-    out[i] = lerp(min[i], max[i], t);
-  }
-  return out;
-}
-
-function newArray (n, initialValue) {
-  n = defined(n, 0);
-  if (typeof n !== 'number') throw new TypeError('Expected n argument to be a number');
-  var out = [];
-  for (var i = 0; i < n; i++) out.push(initialValue);
-  return out;
-}
-
-function linspace (n, opts) {
-  n = defined(n, 0);
-  if (typeof n !== 'number') throw new TypeError('Expected n argument to be a number');
-  opts = opts || {};
-  if (typeof opts === 'boolean') {
-    opts = { endpoint: true };
-  }
-  var offset = defined(opts.offset, 0);
-  if (opts.endpoint) {
-    return newArray(n).map(function (_, i) {
-      return n <= 1 ? 0 : ((i + offset) / (n - 1));
-    });
-  } else {
-    return newArray(n).map(function (_, i) {
-      return (i + offset) / n;
-    });
-  }
-}
-
-function lerpFrames (values, t, out) {
-  t = clamp(t, 0, 1);
-
-  var len = values.length - 1;
-  var whole = t * len;
-  var frame = Math.floor(whole);
-  var fract = whole - frame;
-
-  var nextFrame = Math.min(frame + 1, len);
-  var a = values[frame % values.length];
-  var b = values[nextFrame % values.length];
-  if (typeof a === 'number' && typeof b === 'number') {
-    return lerp(a, b, fract);
-  } else if (Array.isArray(a) && Array.isArray(b)) {
-    return lerpArray(a, b, fract, out);
-  } else {
-    throw new TypeError('Mismatch in value type of two array elements: ' + frame + ' and ' + nextFrame);
-  }
-}
-
-function mod (a, b) {
-  return ((a % b) + b) % b;
-}
-
-function degToRad (n) {
-  return n * Math.PI / 180;
-}
-
-function radToDeg (n) {
-  return n * 180 / Math.PI;
-}
-
-function fract (n) {
-  return n - Math.floor(n);
-}
-
-function sign (n) {
-  if (n > 0) return 1;
-  else if (n < 0) return -1;
-  else return 0;
-}
-
-// Specific function from Unity / ofMath, not sure its needed?
-// function lerpWrap (a, b, t, min, max) {
-//   return wrap(a + wrap(b - a, min, max) * t, min, max)
-// }
-
-function pingPong (t, length) {
-  t = mod(t, length * 2);
-  return length - Math.abs(t - length);
-}
-
-function damp (a, b, lambda, dt) {
-  return lerp(a, b, 1 - Math.exp(-lambda * dt));
-}
-
-function dampArray (a, b, lambda, dt, out) {
-  out = out || [];
-  for (var i = 0; i < a.length; i++) {
-    out[i] = damp(a[i], b[i], lambda, dt);
-  }
-  return out;
-}
-
-function mapRange (value, inputMin, inputMax, outputMin, outputMax, clamp) {
-  // Reference:
-  // https://openframeworks.cc/documentation/math/ofMath/
-  if (Math.abs(inputMin - inputMax) < EPSILON) {
-    return outputMin;
-  } else {
-    var outVal = ((value - inputMin) / (inputMax - inputMin) * (outputMax - outputMin) + outputMin);
-    if (clamp) {
-      if (outputMax < outputMin) {
-        if (outVal < outputMax) outVal = outputMax;
-        else if (outVal > outputMin) outVal = outputMin;
-      } else {
-        if (outVal > outputMax) outVal = outputMax;
-        else if (outVal < outputMin) outVal = outputMin;
-      }
-    }
-    return outVal;
-  }
-}
-
-module.exports = {
-  mod: mod,
-  fract: fract,
-  sign: sign,
-  degToRad: degToRad,
-  radToDeg: radToDeg,
-  wrap: wrap,
-  pingPong: pingPong,
-  linspace: linspace,
-  lerp: lerp,
-  lerpArray: lerpArray,
-  inverseLerp: inverseLerp,
-  lerpFrames: lerpFrames,
-  clamp: clamp,
-  clamp01: clamp01,
-  smoothstep: smoothstep,
-  damp: damp,
-  dampArray: dampArray,
-  mapRange: mapRange,
-  expand2D: expandVector(2),
-  expand3D: expandVector(3),
-  expand4D: expandVector(4)
-};
-
-},{"./lib/wrap":2,"defined":6}],4:[function(require,module,exports){
+},{"canvas-sketch":3,"canvas-sketch-util/random":2}],2:[function(require,module,exports){
 var seedRandom = require('seed-random');
 var SimplexNoise = require('simplex-noise');
 var defined = require('defined');
@@ -637,7 +409,7 @@ function createRandom (defaultSeed) {
 
 module.exports = createRandom();
 
-},{"defined":6,"seed-random":8,"simplex-noise":9}],5:[function(require,module,exports){
+},{"defined":4,"seed-random":5,"simplex-noise":6}],3:[function(require,module,exports){
 (function (global){(function (){
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
@@ -2792,16 +2564,14 @@ module.exports = createRandom();
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}],6:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 module.exports = function () {
     for (var i = 0; i < arguments.length; i++) {
         if (arguments[i] !== undefined) return arguments[i];
     }
 };
 
-},{}],7:[function(require,module,exports){
-module.exports=[["#69d2e7","#a7dbd8","#e0e4cc","#f38630","#fa6900"],["#fe4365","#fc9d9a","#f9cdad","#c8c8a9","#83af9b"],["#ecd078","#d95b43","#c02942","#542437","#53777a"],["#556270","#4ecdc4","#c7f464","#ff6b6b","#c44d58"],["#774f38","#e08e79","#f1d4af","#ece5ce","#c5e0dc"],["#e8ddcb","#cdb380","#036564","#033649","#031634"],["#490a3d","#bd1550","#e97f02","#f8ca00","#8a9b0f"],["#594f4f","#547980","#45ada8","#9de0ad","#e5fcc2"],["#00a0b0","#6a4a3c","#cc333f","#eb6841","#edc951"],["#e94e77","#d68189","#c6a49a","#c6e5d9","#f4ead5"],["#3fb8af","#7fc7af","#dad8a7","#ff9e9d","#ff3d7f"],["#d9ceb2","#948c75","#d5ded9","#7a6a53","#99b2b7"],["#ffffff","#cbe86b","#f2e9e1","#1c140d","#cbe86b"],["#efffcd","#dce9be","#555152","#2e2633","#99173c"],["#343838","#005f6b","#008c9e","#00b4cc","#00dffc"],["#413e4a","#73626e","#b38184","#f0b49e","#f7e4be"],["#ff4e50","#fc913a","#f9d423","#ede574","#e1f5c4"],["#99b898","#fecea8","#ff847c","#e84a5f","#2a363b"],["#655643","#80bca3","#f6f7bd","#e6ac27","#bf4d28"],["#00a8c6","#40c0cb","#f9f2e7","#aee239","#8fbe00"],["#351330","#424254","#64908a","#e8caa4","#cc2a41"],["#554236","#f77825","#d3ce3d","#f1efa5","#60b99a"],["#5d4157","#838689","#a8caba","#cad7b2","#ebe3aa"],["#8c2318","#5e8c6a","#88a65e","#bfb35a","#f2c45a"],["#fad089","#ff9c5b","#f5634a","#ed303c","#3b8183"],["#ff4242","#f4fad2","#d4ee5e","#e1edb9","#f0f2eb"],["#f8b195","#f67280","#c06c84","#6c5b7b","#355c7d"],["#d1e751","#ffffff","#000000","#4dbce9","#26ade4"],["#1b676b","#519548","#88c425","#bef202","#eafde6"],["#5e412f","#fcebb6","#78c0a8","#f07818","#f0a830"],["#bcbdac","#cfbe27","#f27435","#f02475","#3b2d38"],["#452632","#91204d","#e4844a","#e8bf56","#e2f7ce"],["#eee6ab","#c5bc8e","#696758","#45484b","#36393b"],["#f0d8a8","#3d1c00","#86b8b1","#f2d694","#fa2a00"],["#2a044a","#0b2e59","#0d6759","#7ab317","#a0c55f"],["#f04155","#ff823a","#f2f26f","#fff7bd","#95cfb7"],["#b9d7d9","#668284","#2a2829","#493736","#7b3b3b"],["#bbbb88","#ccc68d","#eedd99","#eec290","#eeaa88"],["#b3cc57","#ecf081","#ffbe40","#ef746f","#ab3e5b"],["#a3a948","#edb92e","#f85931","#ce1836","#009989"],["#300030","#480048","#601848","#c04848","#f07241"],["#67917a","#170409","#b8af03","#ccbf82","#e33258"],["#aab3ab","#c4cbb7","#ebefc9","#eee0b7","#e8caaf"],["#e8d5b7","#0e2430","#fc3a51","#f5b349","#e8d5b9"],["#ab526b","#bca297","#c5ceae","#f0e2a4","#f4ebc3"],["#607848","#789048","#c0d860","#f0f0d8","#604848"],["#b6d8c0","#c8d9bf","#dadabd","#ecdbbc","#fedcba"],["#a8e6ce","#dcedc2","#ffd3b5","#ffaaa6","#ff8c94"],["#3e4147","#fffedf","#dfba69","#5a2e2e","#2a2c31"],["#fc354c","#29221f","#13747d","#0abfbc","#fcf7c5"],["#cc0c39","#e6781e","#c8cf02","#f8fcc1","#1693a7"],["#1c2130","#028f76","#b3e099","#ffeaad","#d14334"],["#a7c5bd","#e5ddcb","#eb7b59","#cf4647","#524656"],["#dad6ca","#1bb0ce","#4f8699","#6a5e72","#563444"],["#5c323e","#a82743","#e15e32","#c0d23e","#e5f04c"],["#edebe6","#d6e1c7","#94c7b6","#403b33","#d3643b"],["#fdf1cc","#c6d6b8","#987f69","#e3ad40","#fcd036"],["#230f2b","#f21d41","#ebebbc","#bce3c5","#82b3ae"],["#b9d3b0","#81bda4","#b28774","#f88f79","#f6aa93"],["#3a111c","#574951","#83988e","#bcdea5","#e6f9bc"],["#5e3929","#cd8c52","#b7d1a3","#dee8be","#fcf7d3"],["#1c0113","#6b0103","#a30006","#c21a01","#f03c02"],["#000000","#9f111b","#b11623","#292c37","#cccccc"],["#382f32","#ffeaf2","#fcd9e5","#fbc5d8","#f1396d"],["#e3dfba","#c8d6bf","#93ccc6","#6cbdb5","#1a1f1e"],["#f6f6f6","#e8e8e8","#333333","#990100","#b90504"],["#1b325f","#9cc4e4","#e9f2f9","#3a89c9","#f26c4f"],["#a1dbb2","#fee5ad","#faca66","#f7a541","#f45d4c"],["#c1b398","#605951","#fbeec2","#61a6ab","#accec0"],["#5e9fa3","#dcd1b4","#fab87f","#f87e7b","#b05574"],["#951f2b","#f5f4d7","#e0dfb1","#a5a36c","#535233"],["#8dccad","#988864","#fea6a2","#f9d6ac","#ffe9af"],["#2d2d29","#215a6d","#3ca2a2","#92c7a3","#dfece6"],["#413d3d","#040004","#c8ff00","#fa023c","#4b000f"],["#eff3cd","#b2d5ba","#61ada0","#248f8d","#605063"],["#ffefd3","#fffee4","#d0ecea","#9fd6d2","#8b7a5e"],["#cfffdd","#b4dec1","#5c5863","#a85163","#ff1f4c"],["#9dc9ac","#fffec7","#f56218","#ff9d2e","#919167"],["#4e395d","#827085","#8ebe94","#ccfc8e","#dc5b3e"],["#a8a7a7","#cc527a","#e8175d","#474747","#363636"],["#f8edd1","#d88a8a","#474843","#9d9d93","#c5cfc6"],["#046d8b","#309292","#2fb8ac","#93a42a","#ecbe13"],["#f38a8a","#55443d","#a0cab5","#cde9ca","#f1edd0"],["#a70267","#f10c49","#fb6b41","#f6d86b","#339194"],["#ff003c","#ff8a00","#fabe28","#88c100","#00c176"],["#ffedbf","#f7803c","#f54828","#2e0d23","#f8e4c1"],["#4e4d4a","#353432","#94ba65","#2790b0","#2b4e72"],["#0ca5b0","#4e3f30","#fefeeb","#f8f4e4","#a5b3aa"],["#4d3b3b","#de6262","#ffb88c","#ffd0b3","#f5e0d3"],["#fffbb7","#a6f6af","#66b6ab","#5b7c8d","#4f2958"],["#edf6ee","#d1c089","#b3204d","#412e28","#151101"],["#9d7e79","#ccac95","#9a947c","#748b83","#5b756c"],["#fcfef5","#e9ffe1","#cdcfb7","#d6e6c3","#fafbe3"],["#9cddc8","#bfd8ad","#ddd9ab","#f7af63","#633d2e"],["#30261c","#403831","#36544f","#1f5f61","#0b8185"],["#aaff00","#ffaa00","#ff00aa","#aa00ff","#00aaff"],["#d1313d","#e5625c","#f9bf76","#8eb2c5","#615375"],["#ffe181","#eee9e5","#fad3b2","#ffba7f","#ff9c97"],["#73c8a9","#dee1b6","#e1b866","#bd5532","#373b44"],["#805841","#dcf7f3","#fffcdd","#ffd8d8","#f5a2a2"]]
-},{}],8:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 (function (global){(function (){
 'use strict';
 
@@ -2979,7 +2749,7 @@ mixkey(Math.random(), pool);
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}],9:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 /*
  * A fast javascript implementation of simplex noise by Jonas Wagner
 
@@ -3454,13 +3224,13 @@ Better rank ordering method by Stefan Gustavson in 2012.
 
 })();
 
-},{}],10:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 (function (global){(function (){
 
 global.CANVAS_SKETCH_DEFAULT_STORAGE_KEY = window.location.href;
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}]},{},[1,10])
+},{}]},{},[1,7])
 
-//# sourceMappingURL=t005.js.map
+//# sourceMappingURL=0_print.js.map

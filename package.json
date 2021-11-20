@@ -18,6 +18,14 @@
   },
   "homepage": "https://github.com/watsrunner/sketches#readme",
   "dependencies": {
-    "express": "^4.17.1"
+    "canvas-sketch": "^0.7.4",
+    "canvas-sketch-util": "^1.10.0",
+    "express": "^4.17.1",
+    "glsl-hsl2rgb": "^1.1.0",
+    "glsl-noise": "0.0.0",
+    "glslify": "^7.1.1",
+    "nice-color-palettes": "^3.0.0",
+    "p5": "^1.4.0",
+    "three": "^0.134.0"
   }
 }

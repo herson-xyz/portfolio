@@ -11,6 +11,7 @@
 </head>
 <body>
   <div id="content">
+
     <div class="section">
       <img src="/assets/herson.png" class="me">
       <h1>Herson Guerrero Huh (he/him)</h1>
@@ -18,9 +19,9 @@
       <br>
       <a href="https://herson.notion.site/8c04e21b18a74cc4bce6373bcf1e4567?v=c4907860ac1a44f69b6f0bba1a846d15" class="link" target="_blank">Blog -></a>
       <a href="https://herson.notion.site/Press-4b84446f3fcd4cfdb02c884b8f2cda37" class="link" target="_blank">Press -></a>
-      <a href="https://github.com/watsrunner/development" class="link" target="_blank">GitHub -></a>
+      <a href="https://github.com/watsrunner" class="link" target="_blank">GitHub -></a>
       <a href="https://twitter.com/watsrunner" class="link" target="_blank">Twitter -></a>
-      <a href="mailto:0xherson@protonmail.com" class="link">Contact -></a>
+      <a href="mailto:email@herson.xyz" class="link">Email -></a>
     </div>
 
     <div class="section">
@@ -31,44 +32,87 @@
         is my exploration into this border, looking at it both through personal and societal lenses.
         It is my love letter to this corner of two worlds that will forever go "right down the middle of my heart".
       </p>
-
-      <!-- <br>
-
-      <a href="https://honeysuckle-ironclad-adb.notion.site/All-en-el-Norte-A-love-letter-to-the-border-a3b0d07b3adb43a89bf28a8b9887ad0c" 
-         class="link" 
-         target="_blank">Allá en el Norte Blog -></a>-->
-
     </div> 
 
     <div class="section">
-      <h6>Sketches I</h6>
+      <h6>Sketches I: Creative Exploration</h6>
       <p>This is a collection of recent sketches. Here I'm experimenting with different
         styles, developing an aesthetic. I take inspiration from other artists in the community,
       and this is my attempt at recreating some of my favorite styles. I write about each sketch, inspiration,
       and process at: 
       <a href="https://herson.notion.site/8c04e21b18a74cc4bce6373bcf1e4567?v=7bd9eea614694f9ea0d96082da38150b"
       class="linkNotion"
-      target="_blank">Developing an Aesthetic -></a>
+      target="_blank">Creative Exploration -></a>
       </p>
       <br>
-      <canvas id="canvas1" class="canvas1" width="450" height="450" style="width: 450px; height: 450px;"></canvas>       
+      <!-- Slideshow container -->
+      <div class="slideshow-container">
+        <!-- Full-width images with number and caption text -->
+        <div class="sketches_1 fade">
+          <div class="numbertext">1 / 2</div>
+          <canvas id="canvas1" class="canvas1" width="450" height="450" style="width: 450px; height: 450px;"></canvas>       
+          <div class="text">watercolor on canvas</div>
+        </div>
+
+        <div class="sketches_1 fade">
+          <div class="numbertext">2 / 2</div>
+          <canvas id="canvas4" class="canvas4" width="450" height="450" style="width: 450px; height: 450px;"></canvas>       
+          <div class="text">pixelation</div>
+        </div>
+
+        <!-- Next and previous buttons -->
+        <!-- <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+        <a class="next" onclick="plusSlides(1)">&#10095;</a> -->
+      </div>
+      <br>
+      <!-- The dots/circles -->
+      <div style="text-align:center">
+        <span class="dot" onclick="showSlides(0, 0)"></span>
+        <span class="dot" onclick="showSlides(1, 0)"></span>
+      </div>
     </div>
 
     <div class="section">
-      <h6>Sketches II</h6>
-      <p>This collection is a deep-dive into the Math that drives the aesthetics and styles of Sketches I. These visualizations
+      <h6>Sketches II: Technical Exploration</h6>
+      <p>This collection is a deep-dive into the Math that drives the design and aesthetics of Sketches I. These visualizations
         strip away the design, and hone in on the technical: the numbers, the algorithms, the data structures. It's a way for me 
         to have intentional time to dive deeper into mathematical functions, and the results highlight their natural beauty. I 
         write about each sketch at: 
         <a href="https://herson.notion.site/8c04e21b18a74cc4bce6373bcf1e4567?v=a3647eb01e3740cbb2931cbdcd4070f2"
         class="linkNotion"
-        target="_blank">Experimenting with Math Functions -></a>
+        target="_blank">Technical Exploration -></a>
       </p>
       <br>
-      <canvas id="canvas2" class="canvas2" width="450" height="450" style="width: 450px; height: 450px;"></canvas>  
+      <!-- Slideshow container -->
+      <div class="slideshow-container">
+        <!-- Full-width images with number and caption text -->
+        <div class="sketches_2 fade">
+          <div class="numbertext">1 / 2</div>
+          <canvas id="canvas2" class="canvas2" width="450" height="450" style="width: 450px; height: 450px;"></canvas>       
+          <div class="text">fragment shaders</div>
+        </div>
+
+        <div class="sketches_2 fade">
+          <div class="numbertext">2 / 2</div>
+          <canvas id="canvas3" class="canvas3" width="450" height="450" style="width: 450px; height: 450px;"></canvas>  
+          <div class="text">vertex shaders</div>
+        </div>
+        <!-- Next and previous buttons -->
+        <!-- <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+        <a class="next" onclick="plusSlides(1)">&#10095;</a> -->
+      </div>
+      <br>
+      <!-- The dots/circles -->
+      <div style="text-align:center">
+        <span class="dot" onclick="showSlides(0, 1)"></span>
+        <span class="dot" onclick="showSlides(1, 1)"></span>
+      </div>
     </div>
     <script src="0_sphere.js"></script>
     <script src="0_print.js"></script>
+    <script src="0_mesh.js"></script>
+    <script src="0_pixels.js"></script>
+    <script src="0_slideshow.js"></script>
   </div>
 </body>
 </html>

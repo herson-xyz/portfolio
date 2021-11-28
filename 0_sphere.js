@@ -25,7 +25,7 @@ const { BackSide, Vector3 } = require("three");
 
 const settings = {
   dimensions: [450, 450],
-  canvas: canvas2,
+  canvas: canvas_2_1,
   duration: 4,
   pixelsPerInch: 300,
   animate: true,

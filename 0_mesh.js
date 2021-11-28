@@ -30,7 +30,7 @@ const settings = {
   animate: true,
   // Get a WebGL canvas rather than 2D
   context: "webgl",
-  canvas: canvas3
+  canvas: canvas_2_2
 };
 
 const sketch = ({ context }) => {
